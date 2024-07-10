@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather</title>
+</head>
+<style>
+    body{
+        margin: 0px;
+        padding: 0px;
+        font-family: 'Courier New', Courier, monospace;
+        background-image: linear-gradient(to right, #536976, #292e49);
+        color: white;
+    }
+
+    .container{
+        width: 350px;
+        height: 500px;
+        background-image: url(starfall-gif-46.gif);
+        background-size: cover;
+        /* background-position: right; */
+        background-repeat: no-repeat;
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%,-50%) scale(0.4);
+        border-radius: 20px;
+    }
+
+    #heading{
+        width: 300px;
+        margin-top: 30px;
+    }
+
+    td{
+        /* background-color: cyan; */
+        padding: 5px;
+        height: 150px;
+        border: none;
+        text-align: center;
+        /* From https://css.glass */
+        background: rgba(255, 255, 255, 0.32);
+        border-radius: 16px;
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        backdrop-filter: blur(3.4px);
+        -webkit-backdrop-filter: blur(3.4px);
+        border: 1px solid rgba(255, 255, 255, 0.38);
+    }
+
+
+</style>
+<body>
+    <div class="container">
+        <center><img src="heading.png" alt="" id="heading"></center>
+        <hr style="width: 90%;">
+        <div class="textContainer">
+            <center><pre style="font-size: 15px; color: white;">Sensor Location:
+Bhilai, Chhattisgarh</pre><center>
+            <table cellspacing = "40px">
+                <tr>
+                    <td>Temperature: 
+                        <br>
+                        <p id="temp"></p>
+                    </td>
+                    <td>Humidity: 
+                        <br>
+                        <p id="humid"></p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+<script>
+    var temp = document.getElementById("temp");
+var humid = document.getElementById("humid");
+
+window.onload = execute;
+
+function execute() {
+    fetch("https://weather-remote.onrender.com/weather")
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();  // Parse the JSON response
+        })
+        .then(data => {
+            // Update the HTML with fetched data
+            console.log(data[0]);
+            temp.innerText = data[0]["temp"] + " ℃";
+            humid.innerText = data[0]["humidity"] + " %";
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+        });
+}
+
+// Call execute function immediately on page load
+execute();
+
+// Repeat execute function every 3 minutes (180,000 milliseconds)
+setInterval(execute, 180000);
+</script>
+</body>
+</html>
