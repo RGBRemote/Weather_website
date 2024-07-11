@@ -10,7 +10,7 @@
         margin: 0px;
         padding: 0px;
         font-family: 'Courier New', Courier, monospace;
-        background-image: linear-gradient(to right, #536976, #292e49);
+        /* background-image: linear-gradient(red,blue); */
         color: white;
     }
 
@@ -23,7 +23,7 @@
         background-repeat: no-repeat;
         position: absolute;
         top: 50%; left: 50%;
-        transform: translate(-50%,-50%);
+        transform: translate(-50%,-50%) scale(0.4);
         border-radius: 20px;
     }
 
@@ -72,13 +72,92 @@ Bhilai, Chhattisgarh</pre><center>
     </div>
 
 <script>
+    var active = 0;
     var temp = document.getElementById("temp");
-var humid = document.getElementById("humid");
+    var humid = document.getElementById("humid");
 
-window.onload = execute;
+window.onload = checkActive();
+
+function checkActive(){
+    fetch("https://weatherserver-qpl9.onrender.com/statusG", {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON>stringify({
+            statusCheck: "areyouactive?"
+        }),
+        }).then(response => response.json())
+        .then(data => console.log(data))
+    
+    // Fetching time of patch!
+    fetch("https://weatherserver-qpl9.onrender.com/statusG")
+    .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();  // Parse the JSON response
+        })
+        .then(data => {
+            // Update the HTML with fetched data
+            console.log(data[0]);
+            var patchTime = data[0]["time"]
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+        });
+
+    // Checking system
+    fetch("https://weatherserver-qpl9.onrender.com/statusR")
+    .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();  // Parse the JSON response
+        })
+        .then(data => {
+            // Update the HTML with fetched data
+            console.log(data[0]);
+            var statusTime = data[0]["time"]
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+        });
+    while((patchTime-statusTime) > 60000){
+        fetch("https://weatherserver-qpl9.onrender.com/statusR")
+        .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();  // Parse the JSON response
+            })
+            .then(data => {
+                // Update the HTML with fetched data
+                console.log(data[0]);
+                var statusTime = data[0]["time"]
+            })
+            .catch(error => {
+                console.error('Fetch error:', error);
+        });
+    }
+
+    active = 1;
+    if(active == 1){
+        fetch("https://weatherserver-qpl9.onrender.com/statusG", {
+        method: "PATCH",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON>stringify({
+            statusCheck: "ok"
+        }),
+        }).then(response => response.json())
+        .then(data => console.log(data))
+    }
+}
 
 function execute() {
-    fetch("https://weather-remote.onrender.com/weather")
+    fetch("https://weatherserver-qpl9.onrender.com/weather")
         .then(response => {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -97,10 +176,15 @@ function execute() {
 }
 
 // Call execute function immediately on page load
-execute();
+if(active == 1){
+    execute();
+}else{
+    var container = document.querySelector(".container").innerText = "SYSTEM IS SHUTDOWN";
+}
 
 // Repeat execute function every 3 minutes (180,000 milliseconds)
-setInterval(execute, 180000);
+setInterval(execute, 30000)
+setInterval(checkActive, 110000)
 </script>
 </body>
 </html>
